@@ -1,7 +1,8 @@
 #System Status Traffic Light
-Have you ever wanted to use a Traffic Light to signal if something is working or not? Well we have always wanted one in the office here at Proctorio. We provide a service, and that service uses a number of third party services, all of which may or may not impact our daily operations. 
+Have you ever wanted to use a Traffic Light to signal if something is working or not? Well I know we have always wanted one in the office here at Proctorio. We provide a service as well as use a number of third party services, all of which may or may not impact our daily operations. Basically the Arduino checks for a value on a status page (a simple webpage that the server updates a value based on the information of our own status page), and changes color accordingly. It’s got a few timeout states and error states, as well as a debug mode. It also features the ability to accept commands from our local server to turn the stop light on and off.
 
-You can find the full build writeup here:
+You will find the arduino file and schematic in this repository.
+You can find the full build writeup here: http://www.instructables.com/id/System-Status-Traffic-Light
 
 ---Features---
 
