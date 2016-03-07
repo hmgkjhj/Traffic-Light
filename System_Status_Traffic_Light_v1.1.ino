@@ -57,7 +57,7 @@
  * Status is checked every 30 sec, change "statusInterval" if you'd like to change this.
  * Accommodates for wrong value, long page, broken webpage no page (only reads first 5 characters).
  * If no page is found, retrys 3 times with shorter status interval, otherwise waits for next status interval.
- * Uses millis in the loop instead of delay in order to always accept commands from the server wothout getting stuck in the status interval.
+ * Uses millis in the loop instead of delay in order to always accept commands from the server without getting stuck in the status interval.
  * 
  */
 
@@ -70,7 +70,7 @@ YunServer server; // instantiate a server enabling the the Yún to listen for co
 
 //#define DEBUG // comment out to omit all lines from compiler and disable debug mode
 
-bool lightsOn = false; // state used if the traffic signal is on or off (will not grab status page when false on 1st bootup)
+bool lightsOn = false; // state used if the traffic signal is on or off (will not grab status page untill turned on by server when false on 1st bootup)
 
 // you will need to modify these to reflect your setup
 String statusPageUrl = "_status_page_URL_"; // status webpage URL, you will need to change this to yours (e.g. http://google.com) 
@@ -109,9 +109,8 @@ int retry = 0;
 int flashState = 0;
 
 void setup() {
-  // sets the digital pins as output
+  // sets the digital pins as outputs
   pinMode(debugLed, OUTPUT);
-  
   pinMode(relayPin1, OUTPUT);      
   pinMode(relayPin2, OUTPUT);
   pinMode(relayPin3, OUTPUT);
@@ -243,8 +242,8 @@ void loop() {
   }
 }
 
+//**********Functions**********
 void processCommand(YunClient client) {
-  
   String command = client.readStringUntil('/');
   command.trim();
   #ifdef DEBUG
@@ -394,8 +393,8 @@ void statusUpdate() {
         Serial.print(pageString.substring(0,5));
         Serial.println("...");
       #endif
-      digitalWrite(relayPin2, HIGH); // turn off green, let flash status handle flash
-      digitalWrite(relayPin4, HIGH); // turn off red, let flash status handle flash
+      digitalWrite(relayPin2, HIGH); // turn off green, let flashstatus() handle flash
+      digitalWrite(relayPin4, HIGH); // turn off red, let flashstatus() handle flash
       flashState = 1; // set state to flashing yellow
     }
   } else {
