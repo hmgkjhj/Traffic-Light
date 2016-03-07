@@ -7,7 +7,7 @@
  * 
  * This project is released under the GNU General Public License *see below for details*
  * You can find the latest version here: https://git.io/v2NAi
- * You can find the entire build here: *
+ * You can find the entire build here: http://www.instructables.com/id/System-Status-Traffic-Light
  * A crucial aspect of free software is that users are free to cooperate.
  * It is absolutely essential to permit users who wish to help each other to share their bug fixes and improvements with other users.
  * My code is well commented but isn't prfect, if you have a question or find a bug or improvement please post a Issue/Pull Request on GitHub!
