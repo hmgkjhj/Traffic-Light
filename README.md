@@ -3,6 +3,8 @@ Have you ever wanted to use a Traffic Light to signal if something is working or
 
 You will find the arduino file and schematic in this repository.
 
+The code was written with the Arduino Yun as the target, not your regular Arduino.
+
 You can find the full build writeup here: http://www.instructables.com/id/System-Status-Traffic-Light
 
 #Features
