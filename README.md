@@ -15,12 +15,12 @@ Uses millis in the loop instead of delay() in order to always accept commands fr
 
 # Status Web Page
 Status Page (statusPageUrl) displays a single character and is handeled as follows:
-  	0 = Green = all systems normal, 
-  	1 = Yellow = Ongoing Service Incident Posted, 
-  	2 = Red = Proctorio Service Outage (outage that could be related to 3rd party, but not always), 
-  	3 = Yellow + Green = Related/Unrelated 3rd party vendor is down or experiencing issues and has posted an incident (i.e. visualstudio is down, but that doesn't mean Proctorio's service is impacted), 
-  	Any other value or more than one value = Flashing Yellow, 
-	Page Not Found = Flashing Yellow and Red, 
+- 0 = Green = all systems normal, 
+- 1 = Yellow = Ongoing Service Incident Posted, 
+- 2 = Red = Proctorio Service Outage (outage that could be related to 3rd party, but not always), 
+- 3 = Yellow + Green = Related/Unrelated 3rd party vendor is down or experiencing issues and has posted an incident (i.e. visualstudio is down, but that doesn't mean Proctorio's service is impacted), 
+- Any other value or more than one value = Flashing Yellow, 
+- Page Not Found = Flashing Yellow and Red, 
 
 # Server Commands
 Server can send on/off command (master kill switch), the lightsOn bool is used to hold this value.
