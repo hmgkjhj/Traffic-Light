@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+
+import os
+import socket
+import struct
+import select
+import time
+import RPi.GPIO as GPIO
+
+ICMP_ECHO_REQUEST = 8
+IP = "8.8.8.8"
+TIMEOUT = 0.4
+GREENPIN = 2
+REDPIN = 3
+HISTORY = 5
+
+# Setup GPIO mode
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(REDPIN, GPIO.OUT)
+GPIO.setup(GREENPIN, GPIO.OUT)
+
+def checksum(source_string):
+    sum = 0
+    countTo = (len(source_string) // 2) * 2
+    count = 0
+    while count < countTo:
+        thisVal = source_string[count + 1] * 256 + source_string[count]
+        sum += thisVal
+        sum = sum & 0xffffffff
+        count += 2
+
+    if countTo < len(source_string):
+        sum += source_string[-1]
+        sum = sum & 0xffffffff
+
+    sum = (sum >> 16) + (sum & 0xffff)
+    sum += (sum >> 16)
+    answer = ~sum & 0xffff
+    return answer >> 8 | (answer << 8 & 0xff00)
+
+def receive_one_ping(my_socket, ID, timeout):
+    timeLeft = timeout
+    while True:
+        startSelect = time.time()
+        ready = select.select([my_socket], [], [], timeLeft)
+        duration = time.time() - startSelect
+        if not ready[0]:
+            return None
+
+        timeReceived = time.time()
+        recPacket, addr = my_socket.recvfrom(1024)
+        icmpHeader = recPacket[20:28]
+        _type, _code, _checksum, packetID, _sequence = struct.unpack("bbHHh", icmpHeader)
+        if packetID == ID:
+            bytesInDouble = struct.calcsize("d")
+            timeSent = struct.unpack("d", recPacket[28:28 + bytesInDouble])[0]
+            return timeReceived - timeSent
+ timeLeft -= duration
+        if timeLeft <= 0:
+            return None
+
+def send_one_ping(my_socket, dest_addr, ID):
+    dest_addr = socket.gethostbyname(dest_addr)
+    dummy_checksum = 0
+    header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, dummy_checksum, ID, 1)
+    bytesInDouble = struct.calcsize("d")
+    data = struct.pack("d", time.time()) + (b"Q" * (192 - bytesInDouble))
+
+    real_checksum = checksum(header + data)
+    header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, socket.htons(real_checksum), ID, 1)
+    packet = header + data
+
+    my_socket.sendto(packet, (dest_addr, 1))
+
+def do_one(dest_addr, timeout):
+    icmp = socket.getprotobyname("icmp")
+    try:
+        my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
+    except PermissionError as e:
+        raise PermissionError(f"{e} - Must be run as root (sudo) to send ICMP pings.")
+
+    packet_id = os.getpid() & 0xFFFF
+    send_one_ping(my_socket, dest_addr, packet_id)
+    delay = receive_one_ping(my_socket, packet_id, timeout)
+    my_socket.close()
+    return delay
+
+def blink_pin(pin, interval):
+    t = time.time() % 1
+    GPIO.output(pin, t < 0.5)
+    time.sleep(1)
+def set_pin(pin, value):
+    GPIO.output(pin, value)
+
+if __name__ == "__main__":
+    count = 0
+    loss = 0
+    i=2
+    try:
+        i=0
+        while(i<10):     #this trick for unfreezing system
+            i+=1
+            if(i==9):
+                i=0
+            lasttime = time.time()
+            print(time.time())
+
+            if count >= HISTORY:
+                count -= 1
+                if loss > 0:
+                    loss -= 1
+
+            ping = None
+            try:
+                ping = do_one(IP, TIMEOUT)
+            except Exception as e:
+                print(f"Ping error: {e}")
+
+            count += 1
+            if ping is None:
+                loss += 1
+            elif loss > 0:
+                loss -= 1
+
+            print(f"ping {count}, loss {loss}")
+
+            if loss == 0:
+                set_pin(REDPIN, False)
+                set_pin(GREENPIN, True)
+            elif loss == count:
+                set_pin(GREENPIN, False)
+                set_pin(REDPIN, True)
+            else:
+                set_pin(GREENPIN, False)
+                blink_pin(REDPIN, 0.2 + ((1.0 - (loss / count)) / 2.0))
+
+            wait = lasttime + 1 - time.time()
+            print(f"waiting: {wait:.2f}s")
+            if wait > 0:
+                time.sleep(wait)
+
+    except KeyboardInterrupt:
+        print("Exiting...")
+    finally:
+        GPIO.cleanup()
+
+
